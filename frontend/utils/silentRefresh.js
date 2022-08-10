@@ -1,6 +1,5 @@
 import axios from "axios";
 import { updateHeaders } from "./updateHeaders";
-import Router from "next/router";
 
 export const silentRefresh = async () => {
   try {
@@ -12,15 +11,15 @@ export const silentRefresh = async () => {
       },
     }).then((res) => {
       if (!res.data.ok) {
-        Router.push(`${process.env.BASE_URL}/login`);
         throw Error("Invalid credentials");
       } else {
+        const { accessToken } = res.data;
+        updateHeaders(accessToken);
         return res;
       }
     });
     return res;
   } catch (error) {
-    console.log(error.message);
-    updateHeaders("");
+    updateHeaders(null);
   }
 };

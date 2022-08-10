@@ -1,5 +1,5 @@
 import { createContext, useContext, useRef, useState, useEffect } from "react";
-import { getInfos, getVideos } from "../utils/videos";
+import { getVideos } from "../utils/videos";
 import { silentRefresh } from "../utils/silentRefresh";
 import { updateHeaders } from "../utils/updateHeaders";
 import Router from "next/router";
@@ -9,10 +9,11 @@ import { handleLogout } from "../utils/auth";
 const AuthContext = createContext(null);
 
 export const AppStateWrapper = ({ user, setUser, children }) => {
-  const { pathname } = useRouter();
+  const router = useRouter();
   const [videos, setVideos] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
   const [timeLeft, setTimeLeft] = useState(null);
+  const [fetched, setFetched] = useState(null);
 
   let interval = useRef(null);
   let now = useRef(null);
@@ -22,18 +23,16 @@ export const AppStateWrapper = ({ user, setUser, children }) => {
     setUser: setUser,
     videos: videos,
     interval: interval,
-    setIsRunning: setIsRunning,
     timeLeft: timeLeft,
+    setIsRunning: setIsRunning,
   };
 
   const refresh = async () => {
     const res = await silentRefresh();
     if (res) {
-      const { accessToken } = res.data;
-      updateHeaders(accessToken);
       setUser(res.data);
     } else {
-      updateHeaders("");
+      router.push(`${process.env.BASE_URL}/login`);
       setUser(null);
     }
   };
@@ -76,7 +75,11 @@ export const AppStateWrapper = ({ user, setUser, children }) => {
         executeTimer();
       }
 
-      fetchData();
+      if (!fetched) {
+        console.log("getVideos()");
+        fetchData();
+        setFetched(true);
+      }
     } else {
       clearInterval(interval.current);
       interval.current = null;
@@ -85,7 +88,7 @@ export const AppStateWrapper = ({ user, setUser, children }) => {
 
   useEffect(() => {
     refresh();
-  }, [pathname]);
+  }, [router.asPath]);
 
   return <AuthContext.Provider value={props}>{children}</AuthContext.Provider>;
 };

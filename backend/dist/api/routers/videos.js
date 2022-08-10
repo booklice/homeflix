@@ -22,7 +22,7 @@ router.get("/api/videos", isAuth, (req, res) => __awaiter(void 0, void 0, void 0
     try {
         let videos = [];
         const files = fs.readdirSync("./public/videos");
-        const file = fs.readFileSync("./public/info.json", "utf8");
+        const file = fs.readFileSync("./public/videos.json", "utf8");
         const json = JSON.parse(file);
         for (const file of files) {
             const isVideo = FILE_EXTENSION.includes(path.extname(file));
@@ -35,7 +35,53 @@ router.get("/api/videos", isAuth, (req, res) => __awaiter(void 0, void 0, void 0
             }
         }
         let merged = videos.map((item, i) => Object.assign({}, item, json[i]));
-        return res.status(200).send({ videos: merged });
+        return res.status(200).send({ ok: true, videos: merged });
+    }
+    catch (error) {
+        console.log(error);
+    }
+}));
+router.get("/api/search/:q", isAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        let videos = [];
+        const files = fs.readdirSync("./public/videos");
+        // database json
+        const file = fs.readFileSync("./public/videos.json", "utf8");
+        const json = JSON.parse(file);
+        for (const file of files) {
+            const isVideo = FILE_EXTENSION.includes(path.extname(file));
+            if (isVideo) {
+                const object = {
+                    file: file,
+                    url: `${process.env.BASE_URL}/videos/${file}`,
+                };
+                videos.push(object);
+            }
+        }
+        let merged = videos.map((item, i) => Object.assign({}, item, json[i]));
+        const query = req.params.q;
+        const search = query.toLowerCase();
+        const filtered = merged.filter((video) => {
+            if (video.people.find((each) => each.includes(search))) {
+                return video;
+            }
+            else if (video.theme.includes(search)) {
+                return video;
+            }
+            else if (video.relation.includes(search)) {
+                return video;
+            }
+            else if (video.location.includes(search)) {
+                return video;
+            }
+            else if (video.description.includes(search)) {
+                return video;
+            }
+            else {
+                return null;
+            }
+        });
+        return res.status(200).send({ ok: true, searchVideo: filtered });
     }
     catch (error) {
         console.log(error);

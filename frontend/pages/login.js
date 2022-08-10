@@ -47,6 +47,7 @@ export default function Login() {
               className="input-username"
               type="text"
               name="username"
+              required="required"
               onChange={handleChange}
               placeholder="아이디"
             ></input>
@@ -54,6 +55,7 @@ export default function Login() {
               className="input-password"
               type="password"
               name="password"
+              required="required"
               onChange={handleChange}
               placeholder="비밀번호"
             ></input>

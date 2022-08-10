@@ -15,6 +15,9 @@ export default function Layout({ children, props }) {
     );
   };
 
+  const layoutVisible =
+    router.pathname === "/" || router.pathname === "/search";
+
   useEffect(() => {
     setHeight();
   }, []);
@@ -26,13 +29,17 @@ export default function Layout({ children, props }) {
         <meta name="description" content="Homeflix" />
       </Head>
       <AppStateWrapper user={user} setUser={setUser}>
-        {router.pathname === "/" && <Header />}
+        {layoutVisible && <Header />}
         <main>{children}</main>
       </AppStateWrapper>
       <style jsx>{`
         .container {
           width: 100%;
           height: var(--app-height);
+          display: grid;
+          grid-template-rows: ${layoutVisible
+            ? `50px calc(100% - 50px)`
+            : "var(--app-height)"};
         }
 
         main {

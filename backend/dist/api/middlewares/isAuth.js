@@ -3,8 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.isAuth = void 0;
 const jsonwebtoken_1 = require("jsonwebtoken");
 const isAuth = (req, res, next) => {
+    console.log(req);
     const bearerHeader = req.headers["authorization"];
+    console.log(bearerHeader);
     if (!bearerHeader) {
+        console.log("no bearerHeader");
         return res.json({
             ok: false,
             message: "Not authenticated",
@@ -22,7 +25,6 @@ const isAuth = (req, res, next) => {
         }
     }
     catch (error) {
-        console.log(error);
         return res.json({
             ok: false,
             message: "Not authenticated",
