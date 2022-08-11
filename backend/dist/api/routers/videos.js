@@ -17,12 +17,19 @@ let router = express_1.default.Router();
 const path = require("path");
 const fs = require("fs");
 const { isAuth } = require("../utils/isAuth");
+process.env.NODE_ENV =
+    process.env.NODE_ENV &&
+        process.env.NODE_ENV.trim().toLowerCase() == "production"
+        ? "prod"
+        : "dev";
 const FILE_EXTENSION = [".MOV", ".MP4", ".mp4", ".avi"];
 router.get("/api/videos", isAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let videos = [];
-        const files = fs.readdirSync("./public/videos");
-        const file = fs.readFileSync("./public/videos.json", "utf8");
+        const files = fs.readdirSync(process.env.NODE_ENV === "dev"
+            ? "../../../../../../../../Volumes/250GB/videos"
+            : process.env.PROD_VIDEOS_DIRECTORY, { encoding: "utf-8" });
+        const file = fs.readFileSync("./public/videos.json", "utf-8");
         const json = JSON.parse(file);
         for (const file of files) {
             const isVideo = FILE_EXTENSION.includes(path.extname(file));
@@ -34,7 +41,8 @@ router.get("/api/videos", isAuth, (req, res) => __awaiter(void 0, void 0, void 0
                 videos.push(object);
             }
         }
-        let merged = videos.map((item, i) => Object.assign({}, item, json[i]));
+        let merged = videos;
+        // let merged = videos.map((item, i) => Object.assign({}, item, json[i]));
         return res.status(200).send({ ok: true, videos: merged });
     }
     catch (error) {

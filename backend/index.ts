@@ -22,10 +22,11 @@ const corsOption: CorsOption = {
   origin: [
     "http://localhost:3000",
     "http://localhost:8080",
-    "1.232.237.67",
     "http://127.0.0.1:3000",
     "http://127.0.0.8080",
     "http://localhost:9090",
+    "http://192.168.0.6:8080",
+    "1.232.237.67:12907",
   ],
   credentials: true, // Must specified to set cookies on client side
 };

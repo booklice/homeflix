@@ -4,6 +4,12 @@ const path = require("path");
 const fs = require("fs");
 const { isAuth } = require("../utils/isAuth");
 
+process.env.NODE_ENV =
+  process.env.NODE_ENV &&
+  process.env.NODE_ENV.trim().toLowerCase() == "production"
+    ? "prod"
+    : "dev";
+
 const FILE_EXTENSION: string[] = [".MOV", ".MP4", ".mp4", ".avi"];
 
 interface AuthRequest extends Request {
@@ -13,8 +19,14 @@ interface AuthRequest extends Request {
 router.get("/api/videos", isAuth, async (req: AuthRequest, res: Response) => {
   try {
     let videos: object[] = [];
-    const files: string[] = fs.readdirSync("./public/videos");
-    const file = fs.readFileSync("./public/videos.json", "utf8");
+    const files: string[] = fs.readdirSync(
+      process.env.NODE_ENV === "dev"
+        ? process.env.DEV_VIDEOS_DIRECTORY
+        : process.env.PROD_VIDEOS_DIRECTORY,
+      { encoding: "utf-8" }
+    );
+
+    const file = fs.readFileSync("./public/videos.json", "utf-8");
     const json = JSON.parse(file);
 
     for (const file of files) {
@@ -28,7 +40,8 @@ router.get("/api/videos", isAuth, async (req: AuthRequest, res: Response) => {
       }
     }
 
-    let merged = videos.map((item, i) => Object.assign({}, item, json[i]));
+    let merged = videos;
+    // let merged = videos.map((item, i) => Object.assign({}, item, json[i]));
 
     return res.status(200).send({ ok: true, videos: merged });
   } catch (error) {
