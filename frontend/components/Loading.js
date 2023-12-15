@@ -4,7 +4,6 @@ import { useAppContext } from "../context/Context";
 
 export default function Loading() {
   const router = useRouter();
-
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {

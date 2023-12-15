@@ -3,9 +3,21 @@ import { updateHeaders } from "./updateHeaders";
 import Router from "next/router";
 import { useAppContext } from "../context/Context";
 
+let BASE_URL = null;
+
+if (process.env.NODE_ENV === "development") {
+  // 개발 모드에서 실행 중
+  console.log("현재 개발 모드입니다.");
+  BASE_URL = process.env.SERVER_URL;
+} else {
+  // 프로덕션 모드에서 실행 중
+  console.log("현재 프로덕션 모드입니다.");
+  BASE_URL = process.env.BASE_URL;
+}
+
 export const handleLogin = async (username, password) => {
   try {
-    await axios(`${process.env.SERVER_URL}/api/login`, {
+    await axios(`${BASE_URL}/api/login`, {
       method: "POST",
       withCredentials: true,
       data: {
@@ -26,13 +38,14 @@ export const handleLogin = async (username, password) => {
       }
     });
   } catch (error) {
+    console.log(error);
     console.log(error.message);
   }
 };
 
 export const handleLogout = async () => {
   try {
-    await axios(`${process.env.SERVER_URL}/api/logout`, {
+    await axios(`${BASE_URL}/api/logout`, {
       method: "POST",
       withCredentials: true,
     });

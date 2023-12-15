@@ -32,7 +32,7 @@ export const AppStateWrapper = ({ user, setUser, children }) => {
     if (res) {
       setUser(res.data);
     } else {
-      router.push(`${process.env.BASE_URL}/login`);
+      router.push(`/login`);
       setUser(null);
     }
   };
@@ -51,8 +51,8 @@ export const AppStateWrapper = ({ user, setUser, children }) => {
 
         handleLogout();
 
-        if (confirm("로그인한지 시간이 꽤 지났네요.. 다시 로그인 하십시오.")) {
-          Router.push(`${process.env.BASE_URL}/login`);
+        if (confirm("로그인한지 시간이 꽤 지났네요. 다시 로그인 하세요.")) {
+          Router.push(`/login`);
         }
       }
     }, 1000);
@@ -65,7 +65,7 @@ export const AppStateWrapper = ({ user, setUser, children }) => {
       const fetchData = async () => {
         const res = await getVideos();
         if (res) {
-          setVideos(res.data.videos);
+          setVideos(res.data);
         } else {
           setVideos(null);
         }
@@ -76,7 +76,6 @@ export const AppStateWrapper = ({ user, setUser, children }) => {
       }
 
       if (!fetched) {
-        console.log("getVideos()");
         fetchData();
         setFetched(true);
       }

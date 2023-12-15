@@ -6,7 +6,7 @@ export default function Home() {
 
   return (
     <div className="home-container">
-      <List user={user} videos={videos} />
+      {user && <List user={user} videos={videos} />}
     </div>
   );
 }

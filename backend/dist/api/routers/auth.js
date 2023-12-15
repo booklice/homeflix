@@ -15,76 +15,91 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 let router = express_1.default.Router();
 const bcrypt = require("bcryptjs");
-const { pool } = require("../database/mysql");
 const jsonwebtoken_1 = require("jsonwebtoken");
 const create_1 = require("../utils/create");
 const sendRefreshToken_1 = require("../utils/sendRefreshToken");
+const USERNAME = process.env.USERNAME || "";
+const HASHED_PASSWORD = process.env.HASHED_PASSWORD || "";
+const USER = {
+    USERNAME: USERNAME,
+    HASHED_PASSWORD: HASHED_PASSWORD,
+};
+const domain = process.env.NODE_ENV === "development" ? "localhost" : "homeflix.youngjo.com";
 const comparePasswords = (password, _password) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("comparing password : ", password, HASHED_PASSWORD);
     return yield bcrypt.compare(password, _password);
 });
-const findOne = (username) => __awaiter(void 0, void 0, void 0, function* () {
-    const [rows, fields] = yield pool.query(`SELECT * FROM USER WHERE id = "${username}"`);
-    if (!rows.length) {
-        throw new Error("No Results");
-    }
-    return rows[0];
-});
+const clearCookie = (res) => {
+    return res.clearCookie("refreshToken", {
+        domain: domain,
+        path: process.env.COOKIE_PATH,
+    });
+};
 router.post("/api/login", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { username, password } = req.body;
-    console.log(req.body);
-    const user = yield findOne(username);
-    const valid = yield comparePasswords(password, user.password);
-    if (!valid) {
+    console.log("user trying to login : ", username, password);
+    // console.log(await bcrypt.hashSync(password, 10));
+    if (username === USER.USERNAME) {
+        const valid = yield comparePasswords(password, USER.HASHED_PASSWORD);
+        if (!valid) {
+            console.log("비밀번호 검증 결과 : ", valid);
+            return res.json({
+                ok: false,
+                message: "비밀번호가 틀렸습니다.",
+            });
+        }
+        const refreshToken = (0, create_1.createRefreshToken)(USER);
+        const accessToken = (0, create_1.createAccessToken)(USER);
+        (0, sendRefreshToken_1.sendRefreshToken)(res, refreshToken);
         return res.json({
-            ok: false,
-            message: "비밀번호가 틀렸습니다.",
+            ok: true,
+            message: "로그인 성공.",
+            accessToken: accessToken,
+            user: USER,
         });
     }
-    const refreshToken = (0, create_1.createRefreshToken)(user);
-    const accessToken = (0, create_1.createAccessToken)(user);
-    (0, sendRefreshToken_1.sendRefreshToken)(res, refreshToken);
-    return res.json({
-        ok: true,
-        message: "로그인 성공.",
-        accessToken: accessToken,
-        user: user,
-    });
+    console.log("User not exist");
+    return res.send({ ok: false, message: "User not exist" });
 }));
 router.post("/api/logout", (req, res) => {
-    (0, sendRefreshToken_1.sendRefreshToken)(res, "");
-    res.clearCookie("refreshToken");
-    return res.json({
+    clearCookie(res);
+    return res.send({
         ok: true,
         message: "Successfully logged out",
     });
 });
-router.post("/refresh_token", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const convertTime = (time) => {
+    return new Date(time * 1000).toLocaleString();
+};
+router.post("/api/refresh_token", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
+        clearCookie(res);
         return res.send({
             ok: false,
             message: "No refresh token",
-            accessToken: "",
         });
     }
     let payload = null;
     try {
-        payload = (0, jsonwebtoken_1.verify)(refreshToken, process.env.REFRESH_SECRET_KEY);
+        payload = yield (0, jsonwebtoken_1.verify)(refreshToken, process.env.REFRESH_SECRET_KEY);
     }
     catch (err) {
         return res.send({ ok: false, message: "Verify error" });
     }
-    const user = yield findOne(payload.user.id);
-    if (!user) {
+    if (payload.USER.USERNAME !== USER.USERNAME) {
+        console.log("User not exist");
         return res.send({ ok: false, message: "User not exist" });
     }
-    (0, sendRefreshToken_1.sendRefreshToken)(res, (0, create_1.createRefreshToken)(user));
+    console.log("토큰 생성: ", convertTime(payload === null || payload === void 0 ? void 0 : payload.iat), "토큰 만료: ", convertTime(payload === null || payload === void 0 ? void 0 : payload.exp));
+    console.log("User exist");
+    (0, sendRefreshToken_1.sendRefreshToken)(res, (0, create_1.createRefreshToken)(USER));
     return res.send({
         ok: true,
-        user: payload === null || payload === void 0 ? void 0 : payload.user,
+        user: payload === null || payload === void 0 ? void 0 : payload.USER,
         exp: payload.exp * 1000,
         iat: payload.iat * 1000,
-        accessToken: (0, create_1.createAccessToken)(user),
+        accessToken: (0, create_1.createAccessToken)(USER),
     });
 }));
 module.exports = router;

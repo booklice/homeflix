@@ -1,9 +1,21 @@
 import axios from "axios";
 import { updateHeaders } from "./updateHeaders";
 
+let BASE_URL = null;
+
+if (process.env.NODE_ENV === "development") {
+  // 개발 모드에서 실행 중
+  console.log("현재 개발 모드입니다.");
+  BASE_URL = process.env.SERVER_URL;
+} else {
+  // 프로덕션 모드에서 실행 중
+  console.log("현재 프로덕션 모드입니다.");
+  BASE_URL = process.env.BASE_URL;
+}
+
 export const silentRefresh = async () => {
   try {
-    const res = await axios(`${process.env.SERVER_URL}/refresh_token`, {
+    const res = await axios(`${BASE_URL}/api/refresh_token`, {
       method: "POST",
       withCredentials: true,
       headers: {

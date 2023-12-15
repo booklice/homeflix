@@ -8,34 +8,29 @@ const videos = require("./api/routers/videos");
 const auth = require("./api/routers/auth");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
-import { verify } from "jsonwebtoken";
+const path = require("path");
 
 const app: Application = express();
-const PORT: string = process.env.PORT || "8080";
+const PORT: string = process.env.PORT || "3000";
 
 interface CorsOption {
-  origin: string[];
+  origin: string;
   credentials: boolean;
 }
 
 const corsOption: CorsOption = {
-  origin: [
-    "http://localhost:3000",
-    "http://localhost:8080",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.8080",
-    "http://localhost:9090",
-    "http://192.168.0.6:8080",
-    "1.232.237.67:12907",
-  ],
-  credentials: true, // Must specified to set cookies on client side
+  origin:
+    process.env.NODE_ENV === "development"
+      ? "http://localhost:8080"
+      : "https://homeflix.youngjo.com",
+  credentials: true,
 };
 
 app.use(cors(corsOption));
 app.use(cookieParser());
 
 app.use(express.json());
-app.use(logger);
+// app.use(logger);
 
 app.use(
   bodyParser.urlencoded({
@@ -45,27 +40,8 @@ app.use(
 
 app.use(bodyParser.json());
 
-// File protection
-app.use("/videos", (req: Request, res: Response) => {
-  const { file, accessToken } = req.query;
-  console.log(file, accessToken);
-  if (file && accessToken) {
-    const url = `public/videos/${file}`;
-    let payload: any = null;
-    try {
-      payload = verify(accessToken as string, process.env.ACCESS_SECRET_KEY!);
-    } catch (err) {
-      return res.sendStatus(403);
-    }
-    res.download(url);
-  } else {
-    return res.sendStatus(403);
-  }
-});
-
-app.use("/videos", express.static("public/videos"));
-
 app.use(auth);
+
 app.use(videos);
 
 app.get("/", (req: Request, res: Response) => {
@@ -73,5 +49,5 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🛡️  Server listening on port: ${PORT} 🛡️`);
+  console.log(`Server listening on port: ${PORT}`);
 });

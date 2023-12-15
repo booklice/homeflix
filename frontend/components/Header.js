@@ -1,8 +1,6 @@
 import { handleLogout } from "../utils/auth";
 import { useAppContext } from "../context/Context";
 import { useRouter } from "next/router";
-import { useState, useEffect } from "react";
-import Search from "../components/Search";
 
 const Header = () => {
   const router = useRouter();
@@ -19,8 +17,8 @@ const Header = () => {
 
   return (
     <header>
-      <div>타이틀</div>
-      <Search />
+      <div className="logo-container">HOMEFLIX</div>
+      {/* <Search /> */}
       <div>
         <p>남은시간: {timeLeft ? timeLeft : ""}</p>
         <button onClick={clickLogout}>로그아웃</button>
@@ -31,11 +29,13 @@ const Header = () => {
           width: 100%;
           height: 100%;
           display: grid;
-          grid-template-columns: calc(100% - 400px) 200px 200px;
+          grid-template-columns: calc(100% - 200px) 200px;
+          justify-content: space-between;
           padding: 5px;
         }
 
-        header > div {
+        .logo-container,
+        div:nth-child(2) {
           position: relative;
           width: 100%;
           height: 100%;
@@ -44,8 +44,8 @@ const Header = () => {
           z-index: 1;
         }
 
-        header > div:nth-child(3) {
-          text-align: right;
+        div:nth-child(2) {
+          align-items: flex-end;
         }
 
         header > div > button {
@@ -54,6 +54,7 @@ const Header = () => {
           border: none;
           background: none;
           text-align: right;
+          cursor: pointer;
         }
       `}</style>
     </header>

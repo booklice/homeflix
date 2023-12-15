@@ -2,9 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { verify } from "jsonwebtoken";
 
 export const isAuth = (req: Request, res: Response, next: NextFunction) => {
-  console.log(req);
   const bearerHeader = req.headers["authorization"];
-  console.log(bearerHeader);
   if (!bearerHeader) {
     console.log("no bearerHeader");
     return res.json({
@@ -16,6 +14,8 @@ export const isAuth = (req: Request, res: Response, next: NextFunction) => {
   try {
     const token: string = bearerHeader.split(" ")[1];
     const payload = verify(token, process.env.ACCESS_SECRET_KEY as string);
+
+    console.log(payload);
     if (payload) {
       res.json({
         ok: true,

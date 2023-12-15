@@ -40,12 +40,20 @@ export default function Layout({ children, props }) {
           grid-template-rows: ${layoutVisible
             ? `50px calc(100% - 50px)`
             : "var(--app-height)"};
+
+          font-size: 1em;
         }
 
         main {
           position: relative;
           width: 100%;
           height: 100%;
+        }
+
+        @media (max-width: 767px) {
+          .container {
+            font-size: 0.8em;
+          }
         }
       `}</style>
     </div>

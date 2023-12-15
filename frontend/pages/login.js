@@ -31,7 +31,7 @@ export default function Login() {
                   setUser(null);
                   setIsRunning(false);
                   handleLogout();
-                  router.push(`${process.env.BASE_URL}/login`);
+                  router.push(`/login`);
                 }}
               />
             </p>
